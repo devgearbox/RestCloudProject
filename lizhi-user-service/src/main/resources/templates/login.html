@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+
+        /* 系统头部样式 */
+        .system-header {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            text-align: left;
+            z-index: 10;
+        }
+
+        .system-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #165DFF;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(22, 93, 255, 0.1);
+            line-height: 1.2;
+        }
+
+        .system-subtitle {
+            font-size: 13px;
+            color: #666;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .login-container {
+            margin-top: 60px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #165DFF;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        .forgot-password a {
+            color: #165DFF;
+            text-decoration: none;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #165DFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0E45C1;
+        }
+
+        .register-button {
+            background-color: white;
+            color: #165DFF;
+            border: 1px solid #165DFF;
+        }
+
+        .register-button:hover {
+            background-color: #f5f8ff;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .divider span {
+            background-color: white;
+            padding: 0 10px;
+            position: relative;
+            z-index: 1;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #ddd;
+            z-index: 0;
+        }
+
+        .wechat-button {
+            background-color: #07C160;
+        }
+
+        .wechat-button:hover {
+            background-color: #05A852;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+
+        /* 弹窗容器 */
+        .phone-login-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            background: #fff;
+            width: 420px; /* 比原有登录模块宽 */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            display: none;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        /* 标题样式 */
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* 输入框样式 */
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #409eff; /* Element UI 主题色 */
+        }
+
+        /* 按钮组样式 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: space-between;
+        }
+
+        /* 按钮通用样式 */
+        .btn {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        /* 发送验证码按钮 */
+        .send-btn {
+            background: #67c23a; /* Element UI 成功色 */
+            color: #fff;
+        }
+        .send-btn:hover {
+            background: #5daf34;
+        }
+        /* 登录按钮 */
+        .login-btn {
+            background: #409eff; /* Element UI 主色 */
+            color: #fff;
+        }
+        .login-btn:hover {
+            background: #66b1ff;
+        }
+        /* 关闭按钮 */
+        .close-btn {
+            background: #f5f7fa;
+            color: #909399;
+            border: 1px solid #dcdcdc;
+        }
+        .close-btn:hover {
+            background: #f0f2f5;
+            color: #606266;
+        }
+
+        /* 动画：从下往上弹出 */
+        @keyframes fadeInUp {
+            from {
+                transform: translate(-50%, -60%) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+        }
+        /* 倒计时样式 */
+        .countdown {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .countdown.active {
+            color: #ff4d4f;
+        }
+        .send-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<header class="system-header">
+    <div class="system-name">荔即批发</div>
+    <div class="system-subtitle">智能批发采购平台</div>
+</header>
+<div class="login-container">
+    <h2>用户登录</h2>
+    <form id="loginForm" th:action="@{/login}" method="post">
+        <div class="form-group">
+            <label for="username">账号</label>
+            <input type="text" id="username" name="username" placeholder="请输入账号" required value="user1">
+        </div>
+        <div class="form-group password-container">
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" autocomplete="password" placeholder="请输入密码" required value="123456">
+        </div>
+        <button type="submit">登录</button>
+    </form>
+    <a th:href="@{/register}">
+        <button type="button">注册新账号</button>
+    </a>
+
+    <div class="divider">
+        <span>其他登录方式</span>
+    </div>
+
+    <button type="button" id="wechatLogin" class="wechat-button">手机号登录</button>
+
+</div>
+<!-- 手机号一键登录弹窗 -->
+<div id="phoneLoginModal" class="phone-login-modal">
+    <div class="modal-content">
+        <h3 class="modal-title">手机号一键登录</h3>
+        <div class="form-group">
+            <label for="phoneInput">输入手机号</label>
+            <input type="text" id="phoneInput" placeholder="请输入手机号" class="input-field" />
+        </div>
+        <div class="form-group">
+            <label for="codeInput">输入验证码</label>
+            <input type="text" id="codeInput" placeholder="请输入4位验证码" class="input-field" />
+        </div>
+        <div class="button-group">
+            <button id="sendCodeBtn" class="btn send-btn">发送验证码</button>
+            <button id="phoneLoginBtn" class="btn login-btn">登录</button>
+            <button id="closeModalBtn" class="btn close-btn">关闭</button>
+        </div>
+    </div>
+</div>
+<div id="modalOverlay" class="modal-overlay"></div>
+
+
+<script th:inline="javascript">
+    let successMsg = /*[[${success}]]*/ '';
+    if (successMsg !== null && successMsg.trim() !== "") {
+        alert(successMsg);
+    }
+    // 从 Thymeleaf 变量取 error
+    let errorMsg = /*[[${error}]]*/ '';
+    if (errorMsg !== null && errorMsg.trim() !== "") {
+        alert(errorMsg);
+    }
+
+    // 密码显示/隐藏切换
+    document.addEventListener('DOMContentLoaded', function() {
+        // 密码显示/隐藏切换
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                // 根据密码显示状态，切换伪元素图标（可选，若需要不同状态显示不同图标）
+                this.querySelector('::before');
+                if (type === 'password') {
+                    this.style.color = '#999';
+                } else {
+                    this.style.color = '#666';
+                }
+            });
+        }
+    });
+
+    document.getElementById('wechatLogin').addEventListener('click', function() {
+        document.getElementById('phoneLoginModal').style.display = 'block';
+        document.getElementById('modalOverlay').style.display = 'block';
+    });
+
+    // 关闭弹窗
+    document.getElementById('closeModalBtn').addEventListener('click', function() {
+        document.getElementById('phoneLoginModal').style.display = 'none';
+        document.getElementById('modalOverlay').style.display = 'none';
+    });
+    // 存储后端返回的验证码（前端临时存储，实际可优化为缓存或 Session 关联）
+    let serverCode = '';
+
+    document.getElementById('sendCodeBtn').addEventListener('click', function() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        const sendBtn = this;
+
+        // 1. 手机号格式前端校验
+        const phoneRegex = /^1[3-9]\d{9}$/;
+        if (!phoneRegex.test(phone)) {
+            alert('请输入正确的手机号');
+            return;
+        }
+
+        // 2. 禁用按钮，防止重复点击
+        sendBtn.disabled = true;
+        let countdown = 60;
+
+        // 3. 显示倒计时
+        const countdownElement = document.createElement('div');
+        countdownElement.className = 'countdown active';
+        countdownElement.textContent = `${countdown}秒后重新发送`;
+        sendBtn.parentNode.appendChild(countdownElement);
+
+        // 4. 倒计时函数
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = `${countdown}秒后重新发送`;
+
+            if (countdown <= 0) {
+                clearInterval(timer);
+                sendBtn.disabled = false;
+                countdownElement.remove();
+            }
+        }, 1000);
+
+        // 5. 发送请求
+        fetch('/sendCode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `phone=${encodeURIComponent(phone)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('验证码已发送，请注意查收');
+                // 不再显示验证码
+                document.getElementById('codeInput').placeholder = '请输入验证码';
+            } else if (data.status === 'not_exists') {
+                alert('手机号未注册，请先注册');
+                window.location.href = '/register';
+            } else if (data.status === 'invalid_phone') {
+                alert('手机号格式不正确');
+                clearInterval(timer);
+                sendBtn.disabled = false;
+                countdownElement.remove();
+            } else if (data.status === 'too_frequent') {
+                alert('请求过于频繁，请稍后再试');
+                clearInterval(timer);
+                sendBtn.disabled = false;
+                countdownElement.remove();
+            } else {
+                alert('发送失败：' + (data.message || '未知错误'));
+                clearInterval(timer);
+                sendBtn.disabled = false;
+                countdownElement.remove();
+            }
+        })
+        .catch(error => {
+            console.error('请求失败:', error);
+            alert('网络异常，请重试');
+            clearInterval(timer);
+            sendBtn.disabled = false;
+            countdownElement.remove();
+        });
+    });
+
+    // 手机号登录按钮逻辑
+    document.getElementById('phoneLoginBtn').addEventListener('click', function() {
+        const phone = document.getElementById('phoneInput').value.trim();
+        const inputCode = document.getElementById('codeInput').value.trim();
+
+        // 基本校验
+        if (!phone) {
+            alert('手机号不能为空');
+            return;
+        }
+        if (!inputCode) {
+            alert('验证码不能为空');
+            return;
+        }
+
+        // 调用登录接口
+        fetch('/phoneLogin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(inputCode)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('登录成功');
+                window.location.href = '/purchasework';
+            } else {
+                alert('登录失败：' + (data.message || '未知错误'));
+            }
+        })
+        .catch(error => {
+            console.error('登录请求失败:', error);
+            alert('网络异常，请重试');
+        });
+    });
+
+        //手机号输入实时格式校验
+    document.getElementById('phoneInput').addEventListener('input', function() {
+        const phone = this.value.trim();
+        const phoneRegex = /^1[3-9]\d{9}$/;
+
+        if (phone && !phoneRegex.test(phone)) {
+            this.style.borderColor = '#ff4d4f';
+        } else {
+            this.style.borderColor = '#ddd';
+        }
+    });
+</script>
+</body>
+</html>

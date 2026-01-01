@@ -1,0 +1,4 @@
+spring:
+  cloud:
+    config:
+      enabled: false  # 暂时禁用配置中心
