@@ -3,32 +3,40 @@ server:
 
 spring:
   application:
-    name: api-gateway
+    name: api-gateway #该服务在注册中心中的名字
   cloud:
     gateway:
       discovery:
         locator:
-          enabled: true  # 开启从注册中心动态创建路由
-          lower-case-service-id: true
+          enabled: true  # 开启从注册中心动态创建其它服务的路由
+          lower-case-service-id: true #将服务ID转化为小写（Eureka服务名默认是大写）
       routes:
         - id: user-service
-          uri: lb://USER-SERVICE  # lb://表示负载均衡
-          predicates:
-            - Path=/user/**  # 映射到用户服务的路由
+          uri: lb://user-service  # lb://表示负载均衡
+          predicates:             #断言
+            - Path=/api/users/**  # 映射到用户服务的路由
           filters:
             - StripPrefix=0  # 去掉/user前缀
 
         - id: user-service-static
-          uri: lb://USER-SERVICE
+          uri: lb://user-service
           predicates:
             - Path=/css/**, /js/**, /images/**, /uploads/**
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        enabled: true
+        register-enabled: true
+        service: ${spring.application.name}
+        port: ${server.port} # 注册端口
+      config:
+        server-addr: localhost:8848
+        file-extension: yaml
+        refresh-enabled: true
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
+
 
 logging:
   level:
